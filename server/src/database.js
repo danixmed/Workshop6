@@ -104,6 +104,8 @@ var initialData = {
   }
 };
 
+//I COPY AND PASTED AND THEN READ THE NOTE WHOOPS
+
 var data;
 // If 'true', the in-memory object representing the database has changed,
 // and we should flush it to disk.

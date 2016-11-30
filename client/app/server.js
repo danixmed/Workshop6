@@ -1,18 +1,19 @@
-import {readDocument, writeDocument, addDocument, deleteDocument, getCollection} from './database.js';
+//import {readDocument, writeDocument, addDocument, deleteDocument, getCollection} from './database.js';
 
 /**
  * Emulates how a REST call is *asynchronous* -- it calls your function back
  * some time in the future with data.
- */
+
 function emulateServerReturn(data, cb) {
   setTimeout(() => {
     cb(data);
   }, 4);
 }
+ */
 
 /**
  * Resolves a feed item. Internal to the server, since it's synchronous.
- */
+
 function getFeedItemSync(feedItemId) {
   var feedItem = readDocument('feedItems', feedItemId);
   // Resolve 'like' counter.
@@ -26,6 +27,8 @@ function getFeedItemSync(feedItemId) {
   });
   return feedItem;
 }
+*/
+
 
 /**
  * Emulates a REST call to get the feed data for a particular user.
@@ -54,9 +57,11 @@ cb(JSON.parse(xhr.responseText));
 /**
  * Adds a new comment to the database on the given feed item.
  */
-export function postComment(feedItemId, commentIdx, author, contents, cb) {
-  sendXHR('POST', '/feeditem/' + feedItemId + '/commentthread/' + commentIdx, {
-    contents: contents
+export function postComment(feedItemId, author, contents, cb) {
+  sendXHR('POST', '/feeditem/' + feedItemId + '/comments/', {
+    author: author,
+    contents: contents,
+    postDate: new Date().getTime()
   }, (xhr) => {
   // Return the new status update.
   cb(JSON.parse(xhr.responseText));
@@ -87,7 +92,7 @@ undefined, (xhr) => {
  * Adds a 'like' to a comment.
  */
 export function likeComment(feedItemId, commentIdx, userId, cb) {
-  sendXHR('PUT', '/feeditem/' + feedItemId + '/commentthread/' + commentIdx + '/likelist/' + userId,
+  sendXHR('PUT', '/feeditem/' + feedItemId + '/comments/' + commentIdx + '/likelist/' + userId,
 undefined, (xhr) => {
   cb(JSON.parse(xhr.responseText));
 }); }
@@ -97,7 +102,7 @@ undefined, (xhr) => {
  * Removes a 'like' from a comment.
  */
 export function unlikeComment(feedItemId, commentIdx, userId, cb) {
-  sendXHR('DELETE', '/feeditem/' + feedItemId + '/commentthread/' + commentIdx + '/likelist/' + userId,
+  sendXHR('DELETE', '/feeditem/' + feedItemId + '/comments/' + commentIdx + '/likelist/' + userId,
   undefined, (xhr) => {
   cb(JSON.parse(xhr.responseText));
   }); }
@@ -180,7 +185,9 @@ case 'string':
     xhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8"); xhr.send(body);
 break;
 case 'object':
-// Tell the server we are sending JSON. xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Convert body into a JSON string.
+// Tell the server we are sending JSON.
+xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+// Convert body into a JSON string.
 xhr.send(JSON.stringify(body));
 break;
 default:

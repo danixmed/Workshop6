@@ -93,7 +93,7 @@ app.get('/user/:userid/feed', function(req, res) {
 /**
  * Adds a new status update to the database.
  */
-function postStatusUpdate(user, location, contents) {
+function postStatusUpdate(user, location, contents, image) {
   // If we were implementing this for real on an actual server, we would check
   // that the user ID is correct & matches the authenticated user. But since
   // we're mocking it, we can be less strict.

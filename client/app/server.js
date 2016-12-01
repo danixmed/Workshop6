@@ -58,10 +58,10 @@ cb(JSON.parse(xhr.responseText));
  * Adds a new comment to the database on the given feed item.
  */
 export function postComment(feedItemId, author, contents, cb) {
-  sendXHR('POST', '/feeditem/' + feedItemId + '/comments/', {
-    author: author,
-    contents: contents,
-    postDate: new Date().getTime()
+  sendXHR('POST', '/feeditem/' + feedItemId + '/comments', {
+    "author": author,
+    "contents": contents,
+    "postDate": new Date().getTime()
   }, (xhr) => {
   // Return the new status update.
   cb(JSON.parse(xhr.responseText));
@@ -72,8 +72,7 @@ export function postComment(feedItemId, author, contents, cb) {
  * Provides an updated likeCounter in the response.
  */
 export function likeFeedItem(feedItemId, userId, cb) {
-  sendXHR('PUT', '/feeditem/' + feedItemId + '/likelist/' + userId,
-undefined, (xhr) => {
+  sendXHR('PUT', '/feeditem/' + feedItemId + '/likelist/' + userId, undefined, (xhr) => {
   cb(JSON.parse(xhr.responseText));
 }); }
 
@@ -142,7 +141,8 @@ var token = 'eyJpZCI6NH0='; // <-- Put your base64'd JSON token here
  */
 function sendXHR(verb, resource, body, cb) {
 var xhr = new XMLHttpRequest();
-xhr.open(verb, resource); xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+xhr.open(verb, resource);
+xhr.setRequestHeader('Authorization', 'Bearer ' + token);
 // The below comment tells ESLint that FacebookError is a global.
 // Otherwise, ESLint would complain about it! (See what happens in Atom if
 // you remove the comment...)
@@ -176,13 +176,15 @@ xhr.addEventListener('timeout', function() {
   FacebookError('Could not ' + verb + " " + resource +
                 ": Request timed out.");
 });
-switch (typeof(body)) { case 'undefined':
+switch (typeof(body)) {
+case 'undefined':
     // No body to send.
 xhr.send();
 break;
 case 'string':
     // Tell the server we are sending text.
-    xhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8"); xhr.send(body);
+    xhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+    xhr.send(body);
 break;
 case 'object':
 // Tell the server we are sending JSON.

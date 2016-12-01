@@ -9,7 +9,7 @@ import FeedItem from './components/feeditem';
 import {hideElement} from './util';
 import {searchForFeedItems, deleteFeedItem} from './server';
 import { IndexRoute, Router, Route, hashHistory } from 'react-router';
-//imports ErrorBanner from './components/errorbanner';
+import ErrorBanner from './components/errorbanner';
 
 /**
  * A fake profile page.
@@ -139,6 +139,11 @@ class App extends React.Component {
         <NavBar searchTerm={searchTerm} />
         <div className="container">
           <div className="row">
+            <div className="col-md-12">
+             <ErrorBanner />
+           </div>
+         </div>
+         <div className="row">
             <div className="col-md-2 fb-left-sidebar">
               <LeftSideBar />
             </div>

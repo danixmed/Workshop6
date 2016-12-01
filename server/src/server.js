@@ -109,6 +109,7 @@ function postStatusUpdate(user, location, contents, image) {
       "postDate": time,
       "location": location,
       "contents": contents,
+      "image": image,
       "likeCounter": []
     },
     // List of comments on the post

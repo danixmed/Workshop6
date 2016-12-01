@@ -3,14 +3,15 @@ var express = require('express');
 // Creates an Express server.
 var app = express();
 
+var bodyParser = require('body-parser');
 var database = require('./database');
 var readDocument = database.readDocument;
+var writeDocument = database.writeDocument;
+var addDocument = database.addDocument;
 var StatusUpdateSchema = require('./schemas/statusupdate.json');
 var CommentSchema = require('./schemas/comment.json');
 var validate = require('express-jsonschema').validate;
-var writeDocument = database.writeDocument;
-var addDocument = database.addDocument;
-var bodyParser = require('body-parser');
+
 
 
 // Support receiving text in HTTP request bodies
@@ -29,8 +30,7 @@ app.use(express.static('../client/build'));
 function getFeedItemSync(feedItemId) {
 var feedItem = readDocument('feedItems', feedItemId);
 // Resolve 'like' counter.
-feedItem.likeCounter = feedItem.likeCounter.map((id) =>
-readDocument('users', id));
+feedItem.likeCounter = feedItem.likeCounter.map((id) => readDocument('users', id));
 // Assuming a StatusUpdate. If we had other types of
 // FeedItems in the DB, we would
 // need to check the type and have logic for each type.
@@ -56,7 +56,8 @@ return feedData;
 }
 
 
-function getUserIdFromToken(authorizationLine) { try {
+function getUserIdFromToken(authorizationLine) {
+  try {
     // Cut off "Bearer " from the header value.
     var token = authorizationLine.slice(7);
 // Convert the base64 string to a UTF-8 string.
@@ -66,7 +67,8 @@ var tokenObj = JSON.parse(regularString);
 var id = tokenObj['id'];
 // Check that id is a number.
 if (typeof id === 'number') {
-return id; } else {
+return id;
+} else {
       // Not a number. Return -1, an invalid ID.
 return -1; }
 } catch (e) {
@@ -150,24 +152,7 @@ res.send(newUpdate); } else {
   }
 });
 
-/**
- * Translate JSON Schema Validation failures into error 400s.``
-*/
-app.use(function(err, req, res, next) {
-if (err.name === 'JsonSchemaValidation') {
-    // Set a bad request http response status
-res.status(400).end(); } else {
-    // It's some other sort of error; pass it to next error middleware handler
-next(err); }
-});
 
-// Reset database.
-app.post('/resetdb', function(req, res) { console.log("Resetting database...");
-// This is a debug route, so don't do any validation.
-database.resetDatabase();
-// res.send() sends an empty response with status code 200
-res.send();
-});
 
 // Update a feed item.
 app.put('/feeditem/:feeditemid/content', function(req, res) {
@@ -294,13 +279,12 @@ res.status(400).end();
 } });
 
 // postComment
-app.post('/feeditem/:feedItemId/comments',
-validate({ body: CommentSchema }), function(req, res) {
+app.post('/feeditem/:feeditemid/comments', validate({ body: CommentSchema }), function(req, res) {
   // If this function runs, `req.body` passed JSON validation!
+var fromUser = getUserIdFromToken(req.get('Authorization'));
 var comment = req.body;
 var author = req.body.author;
 var feedItemId = req.params.feeditemid;
-var fromUser = getUserIdFromToken(req.get('Authorization'));
 if (fromUser === author) {
 var feedItem = readDocument('feedItems', feedItemId);
 comment.likeCounter = [];
@@ -309,7 +293,8 @@ writeDocument('feedItems', feedItem);
 res.status(201);
 res.set('Location', '/feeditem/' + feedItemId + "/comments/" + commentId);
      // Send the update!
-res.send(getFeedItemSync(feedItemId)); } else {
+res.send(getFeedItemSync(feedItemId));
+} else {
     // 401: Unauthorized.
     res.status(401).end();
   }
@@ -365,8 +350,24 @@ res.send(comment);
 res.status(401).end();
 } });
 
+/**
+ * Translate JSON Schema Validation failures into error 400s.``
+*/
+app.use(function(err, req, res, next) {
+if (err.name === 'JsonSchemaValidation') {
+    // Set a bad request http response status
+res.status(400).end(); } else {
+    // It's some other sort of error; pass it to next error middleware handler
+next(err); }
+});
 
-
+// Reset database.
+app.post('/resetdb', function(req, res) { console.log("Resetting database...");
+// This is a debug route, so don't do any validation.
+database.resetDatabase();
+// res.send() sends an empty response with status code 200
+res.send();
+});
 
 
 
